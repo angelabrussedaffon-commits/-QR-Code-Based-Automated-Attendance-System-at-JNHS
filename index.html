@@ -2,6 +2,7 @@
   ======================================================================
   JAVIER NATIONAL HIGH SCHOOL - AUTOMATED QR ATTENDANCE SYSTEM
   System Architecture & Compiled Build: JNHS-QR-JFCB-v1.0
+  Developed for Academic Research Purposes Only
   ======================================================================
 -->
 <!DOCTYPE html>
@@ -104,13 +105,13 @@
     </div>
   </div>
 
-  <!-- FOOTER INITIALS / BUILD CODE -->
+  <!-- ACADEMIC RESEARCH FOOTER -->
   <footer class="mt-4 mb-2 text-center border-t border-slate-200/60 pt-4 w-full max-w-md">
     <p class="text-[10px] text-slate-400 font-mono tracking-wider">
       v1.0.4-prod • Build ID: <span class="text-slate-500 font-semibold">JNHS-QR-JFCB2026</span>
     </p>
     <p class="text-[9px] text-slate-400 mt-0.5">
-      © 2026 Javier National High School. All Rights Reserved.
+      Developed for Academic Research Purposes • Javier National High School
     </p>
   </footer>
 
@@ -223,7 +224,7 @@
         grid.innerHTML += `
           <div class="h-8 flex flex-col items-center justify-center rounded-md text-[11px] transition-all ${bgClass}">
             <span>${day}</span>
-            ${statusLabel ? `<span class="text-[8px] leading-none opacity-90">\${statusLabel}</span>` : ''}
+            ${statusLabel ? `<span class="text-[8px] leading-none opacity-90">${statusLabel}</span>` : ''}
           </div>
         `;
       }
