@@ -73,7 +73,8 @@
         const response = await fetch(WEB_APP_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ action: "GET_STATS" })
+          body: JSON.stringify({ action: "GET_STATS" }),
+          redirect: "follow"
         });
         const result = await response.json();
         if (result.status === "success" && result.stats) {
@@ -120,7 +121,8 @@
         const response = await fetch(WEB_APP_URL, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ lrn: decodedText.trim() })
+          body: JSON.stringify({ lrn: decodedText.trim() }),
+          redirect: "follow"
         });
 
         const result = await response.json();
