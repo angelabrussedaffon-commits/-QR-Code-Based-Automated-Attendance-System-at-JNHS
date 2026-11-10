@@ -12,8 +12,36 @@
 <body class="bg-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
 
   <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-6 flex flex-col items-center border border-slate-200">
+    
+    <!-- SCHOOL / SYSTEM LOGO HERE -->
+    <div class="mb-3 flex justify-center">
+      <img 
+        src="logo.jpg" 
+        alt="School Logo" 
+        class="h-20 w-20 object-contain drop-shadow-sm rounded-full border border-slate-100 p-1"
+        onerror="this.style.display='none'"
+      />
+    </div>
+
     <h1 class="text-2xl font-bold text-slate-800 mb-1">QR Attendance System</h1>
-    <p class="text-xs font-medium text-slate-500 mb-4 uppercase tracking-wider">Cutoff: 7:30 AM | TimeOut: 5:00 PM </p>
+    <p class="text-xs font-medium text-slate-500 mb-4 uppercase tracking-wider">Cutoff: 7:00 AM | TimeOut: 4:00 PM</p>
+
+    <!-- REAL-TIME DASHBOARD COUNTERS CARD -->
+    <div class="w-full grid grid-cols-2 gap-3 mb-4">
+      <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-3 text-center">
+        <p class="text-xs font-semibold text-indigo-600 uppercase">No. of Students</p>
+        <p id="counter-present" class="text-lg font-bold text-indigo-900 mt-1">
+          <span id="val-present">--</span> / <span id="val-enrolled">--</span>
+        </p>
+        <p class="text-[10px] text-indigo-500 mt-0.5">Present / Enrolled</p>
+      </div>
+
+      <div class="bg-rose-50 border border-rose-200 rounded-xl p-3 text-center">
+        <p class="text-xs font-semibold text-rose-600 uppercase">Total Absent</p>
+        <p id="val-absent" class="text-lg font-bold text-rose-900 mt-1">--</p>
+        <p class="text-[10px] text-rose-500 mt-0.5">Students Absent Today</p>
+      </div>
+    </div>
 
     <!-- Camera Viewport Container -->
     <div id="reader" class="w-full bg-black rounded-xl overflow-hidden min-h-[300px] border border-slate-300"></div>
@@ -26,11 +54,34 @@
   </div>
 
   <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz3zonPAIDztpcXp-KJ7EF6Q6WzNn6jjCndDf2Vjb4s7v2wy3otFXoCo634MObjE6g/exec";
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzUZUxSxBJedETA102JkNr40wrWeXpGEriuEif-T2LllbDtG3y6uyS8Cayd-jQcOB-5kA/exec";
 
     let isProcessing = false;
     let lastScannedCode = "";
     let lastScanTime = 0;
+
+    function updateCounters(stats) {
+      if (!stats) return;
+      document.getElementById("val-present").innerText = stats.totalPresent;
+      document.getElementById("val-enrolled").innerText = stats.totalEnrolled;
+      document.getElementById("val-absent").innerText = stats.totalAbsent;
+    }
+
+    async function fetchStats() {
+      try {
+        const response = await fetch(WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({ action: "GET_STATS" })
+        });
+        const result = await response.json();
+        if (result.status === "success" && result.stats) {
+          updateCounters(result.stats);
+        }
+      } catch (err) {
+        console.error("Failed to load initial stats:", err);
+      }
+    }
 
     function showStatus(title, message, type) {
       const card = document.getElementById("status-card");
@@ -53,7 +104,6 @@
 
     async function handleScanSuccess(decodedText) {
       const now = Date.now();
-      // Ignore repeat scans of the same QR code within 5 seconds
       if (decodedText === lastScannedCode && (now - lastScanTime) < 5000) {
         return;
       }
@@ -80,6 +130,9 @@
             result.message,
             "success"
           );
+          if (result.stats) {
+            updateCounters(result.stats);
+          }
         } else if (result.status === "warning") {
           showStatus("⚠️ Notice", result.message, "warning");
         } else {
@@ -92,19 +145,19 @@
       }
     }
 
+    // Load initial stats on page load
+    fetchStats();
+
     const html5QrCode = new Html5Qrcode("reader");
 
-    // Initialize camera by detecting available video devices
     Html5Qrcode.getCameras().then(devices => {
       if (devices && devices.length) {
-        // Prioritize back/rear camera by checking device label
         let selectedCamera = devices.find(device => 
           device.label.toLowerCase().includes("back") || 
           device.label.toLowerCase().includes("rear") ||
           device.label.toLowerCase().includes("environment")
         );
 
-        // Fallback to the last camera in the list (typically the back camera on Android/iOS)
         let cameraId = selectedCamera ? selectedCamera.id : devices[devices.length - 1].id;
 
         html5QrCode.start(
